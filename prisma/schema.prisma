@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id                String   @id @default(cuid())
+  providerProductId Int      @unique
+  name              String
+  description       String?
+  image             String?
+  price             Decimal
+  discount          Int?
+  availability      Boolean?
+  brand             String?
+  category          String
+  rating            Decimal?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  syncedAt          DateTime @default(now())
+
+  orderItems        OrderItem[]
+  reviews           ProductReview[]
+
+  @@index([category])
+  @@index([price(sort: Desc)])
+}
+
+model Order {
+  id               String   @id @default(cuid())
+  providerOrderId  Int      @unique
+  providerUserId   Int
+  status           String
+  totalPrice       Decimal
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  syncedAt         DateTime @default(now())
+
+  orderItems       OrderItem[]
+
+  @@index([providerOrderId(sort: Desc)])
+  @@index([status])
+}
+
+model OrderItem {
+  id                String   @id @default(cuid())
+  orderId           String
+  productId         String
+  quantity          Int
+  unitPriceSnapshot Decimal
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  syncedAt          DateTime @default(now())
+
+  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product           Product   @relation(fields: [productId], references: [id])
+
+  @@unique([orderId, productId])
+  @@index([productId])
+}
+
+model ProductReview {
+  id              String   @id @default(cuid())
+  productId       String
+  providerUserId  Int
+  rating          Int
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  syncedAt        DateTime @default(now())
+
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model SyncRun {
+  id             String    @id @default(cuid())
+  startedAt      DateTime  @default(now())
+  finishedAt     DateTime?
+  status         SyncStatus @default(RUNNING)
+  errorMessage   String?
+  productsFetched Int?
+  ordersFetched   Int?
+  syncedAt       DateTime  @default(now())
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
