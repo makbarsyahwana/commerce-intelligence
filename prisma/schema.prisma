@@ -49,6 +49,7 @@ model Order {
   @@index([status])
   @@index([provider])
   @@index([provider, providerOrderId(sort: Desc)])
+  @@index([createdAt(sort: Desc)])  // Added for recent orders query
 }
 
 model OrderItem {
@@ -89,6 +90,8 @@ model SyncRun {
   ordersFetched   Int?
   syncedAt        DateTime   @default(now())
   provider        String?
+
+  @@index([startedAt(sort: Desc)])  // Added for latest sync run query
 }
 
 enum SyncStatus {
