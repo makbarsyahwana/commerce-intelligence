@@ -1,5 +1,6 @@
 import { task, schedules } from "@trigger.dev/sdk";
-import { z } from "zod";
+import { syncAllProviders } from "../lib/sync/syncProviders";
+import { createLogger } from "../lib/logger";
 
 export const syncEcommerceSnapshot = task({
   id: "sync-ecommerce-snapshot",
@@ -10,40 +11,19 @@ export const syncEcommerceSnapshot = task({
     maxTimeoutInMs: 30000,
   },
   run: async () => {
-    console.log("Starting e-commerce snapshot sync");
-
-    // Placeholder: Create SyncRun
-    const syncRun = await createSyncRun();
-    console.log(`Created SyncRun: ${syncRun.id}`);
+    const logger = createLogger({ operation: 'syncEcommerceSnapshot' });
+    
+    logger.info("Starting e-commerce multi-provider snapshot sync");
 
     try {
-      // Placeholder: Fetch products
-      const products = await fetchProducts();
-      console.log(`Fetched ${products.length} products`);
-
-      // Placeholder: Upsert products
-      await upsertProducts(products);
-      console.log("Upserted products");
-
-      // Placeholder: Fetch orders
-      const orders = await fetchOrders();
-      console.log(`Fetched ${orders.length} orders`);
-
-      // Placeholder: Upsert orders
-      await upsertOrders(orders);
-      console.log("Upserted orders");
-
-      // Placeholder: Reconcile order items
-      await reconcileOrderItems(orders);
-      console.log("Reconciled order items");
-
-      // Placeholder: Update SyncRun as SUCCESS
-      await updateSyncRun(syncRun.id, "SUCCESS", null, products.length, orders.length);
-      console.log("Sync completed successfully");
+      await syncAllProviders();
+      
+      logger.info("Multi-provider sync completed successfully");
+      
     } catch (error) {
-      console.error("Sync failed:", error);
-      // Placeholder: Update SyncRun as FAILED
-      await updateSyncRun(syncRun.id, "FAILED", error instanceof Error ? error.message : "Unknown error", null, null);
+      logger.error("Multi-provider sync failed", { 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
       throw error;
     }
   },
@@ -55,41 +35,3 @@ schedules.create({
   task: syncEcommerceSnapshot.id,
   deduplicationKey: "hourly-sync",
 });
-
-// Placeholder functions (to be implemented)
-async function createSyncRun() {
-  // TODO: Implement SyncRun creation
-  return { id: "placeholder-sync-run-id" } as any;
-}
-
-async function fetchProducts() {
-  // TODO: Implement fetch from https://fake-store-api.mock.beeceptor.com/api/products
-  return [];
-}
-
-async function fetchOrders() {
-  // TODO: Implement fetch from https://fake-store-api.mock.beeceptor.com/api/orders
-  return [];
-}
-
-async function upsertProducts(products: any[]) {
-  // TODO: Implement Prisma upsert by providerProductId
-}
-
-async function upsertOrders(orders: any[]) {
-  // TODO: Implement Prisma upsert by providerOrderId
-}
-
-async function reconcileOrderItems(orders: any[]) {
-  // TODO: Implement delete+create per order
-}
-
-async function updateSyncRun(
-  id: string,
-  status: "RUNNING" | "SUCCESS" | "FAILED",
-  errorMessage: string | null,
-  productsFetched: number | null,
-  ordersFetched: number | null
-) {
-  // TODO: Implement SyncRun update
-}
