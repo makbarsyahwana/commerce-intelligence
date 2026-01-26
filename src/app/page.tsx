@@ -1,4 +1,4 @@
-import { getMetricCards, getOrdersByStatus, getProductsByCategory, getRevenueByCategory } from '@/lib/dashboardQueries';
+import { getMetricCards, getOrdersByStatus, getProductsByCategory, getRecentOrders, getTopProducts, getRevenueByCategory } from '@/lib/services/dashboardQueries';
 import { Metadata } from 'next';
 import { 
   RecentOrdersTable, 
@@ -11,6 +11,7 @@ import {
 import ModernDashboardLayout from '@/components/ui/organisms/ModernDashboardLayout';
 import EnhancedMetricsGrid from '@/components/ui/organisms/EnhancedMetricsGrid';
 import GlassCard from '@/components/ui/atoms/GlassCard';
+import type { DashboardChartData, DashboardDataBundle, DashboardMetrics, MetricCard } from '@/types/dashboard';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -27,11 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const DASHBOARD_TITLE = 'E-commerce Analytics Dashboard';
 const DASHBOARD_SUBTITLE = 'Real-time insights into your e-commerce operations';
 
-function convertDecimalToNumber(value: any): number {
-  return Number(value);
-}
-
-function createMetricData(metrics: any) {
+function createMetricData(metrics: DashboardMetrics): MetricCard[] {
   return [
     {
       title: 'Total Products',
@@ -112,7 +109,7 @@ export default async function Dashboard() {
   );
 }
 
-async function fetchDashboardData() {
+async function fetchDashboardData(): Promise<DashboardDataBundle> {
   const [metrics, ordersByStatus, productsByCategory, revenueByCategory] = await Promise.all([
     getMetricCards(),
     getOrdersByStatus(),
@@ -123,24 +120,17 @@ async function fetchDashboardData() {
   return { metrics, ordersByStatus, productsByCategory, revenueByCategory };
 }
 
-function prepareChartData(data: any) {
+function prepareChartData(data: DashboardDataBundle): DashboardChartData {
   return {
-    ordersByStatus: data.ordersByStatus.map((order: any) => ({
-      ...order,
-      totalRevenue: convertDecimalToNumber(order.totalRevenue)
-    })),
-    productsByCategory: data.productsByCategory.map((category: any) => ({
-      ...category,
-      avgPrice: convertDecimalToNumber(category.avgPrice),
-      totalValue: convertDecimalToNumber(category.totalValue)
-    })),
-    revenueByCategory: data.revenueByCategory
+    ordersByStatus: data.ordersByStatus,
+    productsByCategory: data.productsByCategory,
+    revenueByCategory: data.revenueByCategory,
   };
 }
 
 interface DashboardSectionsProps {
-  metrics: any[];
-  chartData: any;
+  metrics: MetricCard[];
+  chartData: DashboardChartData;
 }
 
 function DashboardSections({ metrics, chartData }: DashboardSectionsProps) {
@@ -154,7 +144,7 @@ function DashboardSections({ metrics, chartData }: DashboardSectionsProps) {
   );
 }
 
-function ChartsSection({ chartData }: { chartData: any }) {
+function ChartsSection({ chartData }: { chartData: DashboardChartData }) {
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
