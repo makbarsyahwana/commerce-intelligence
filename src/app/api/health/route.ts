@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/container/prisma';
 import { getSyncRunRepository } from '@/lib/container/config';
 
 export async function GET() {

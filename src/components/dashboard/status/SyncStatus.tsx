@@ -1,4 +1,4 @@
-import { getLatestSyncRun } from '@/lib/dashboardQueries';
+import { getLatestSyncRun } from '@/lib/services/dashboardQueries';
 
 interface SyncStatusProps {
   className?: string;

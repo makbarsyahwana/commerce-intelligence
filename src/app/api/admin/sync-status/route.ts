@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getLatestSyncRun } from '@/lib/dashboardQueries';
+import { getLatestSyncRun } from '@/lib/services/dashboardQueries';
 import '@/lib/app'; // Auto-bootstrap application
 
 export async function GET() {

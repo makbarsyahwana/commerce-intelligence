@@ -19,7 +19,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 export interface TableColumn<T> {
   key: keyof T;
   header: string;
-  render?: (value: any, row: T) => React.ReactNode;
+  render?: (value: T[keyof T], row: T) => React.ReactNode;
   className?: string;
 }
 
