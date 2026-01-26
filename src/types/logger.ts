@@ -7,6 +7,11 @@ export interface LogContext {
   error?: string;
   operation?: string;
   masterRunId?: string;
+  correlationId?: string;
+  method?: string;
+  url?: string;
+  userAgent?: string;
+  ip?: string;
   [key: string]: unknown;
 }
 
@@ -15,4 +20,7 @@ export interface Logger {
   warn(message: string, context?: LogContext): void;
   error(message: string, context?: LogContext): void;
   debug(message: string, context?: LogContext): void;
+  withContext(context: LogContext): Logger;
+  withCorrelationId(correlationId: string): Logger;
+  getCorrelationId(): string;
 }
