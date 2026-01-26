@@ -26,9 +26,28 @@ export interface ProductCategory {
 
 export interface RevenueCategory {
   category: string;
-  totalRevenue: number;
-  unitsSold: number;
+  orderCount: number;
+  quantity: number;
 }
+
+export interface DashboardMetrics {
+  totalProducts: number;
+  totalOrders: number;
+  totalRevenue: number;
+  totalProviders: number;
+  latestSyncRun: SyncRun | null;
+  dateRange: { from: Date; to: Date } | null;
+  [key: string]: unknown;
+}
+
+export interface DashboardDataBundle {
+  metrics: DashboardMetrics;
+  ordersByStatus: OrderStatus[];
+  productsByCategory: ProductCategory[];
+  revenueByCategory: RevenueCategory[];
+}
+
+export type DashboardChartData = Omit<DashboardDataBundle, 'metrics'>;
 
 export interface RecentOrder {
   id: string;
@@ -45,11 +64,14 @@ export interface RecentOrder {
 export interface TopProduct {
   id: string;
   name: string;
-  sku: string;
-  totalSold: number;
-  totalRevenue: number;
+  provider: string;
   price: number;
   category: string;
+  availability: boolean;
+  rating: number | null;
+  discount: number | null;
+  orderCount: number;
+  totalQuantity: number;
 }
 
 export interface SyncRun {
@@ -69,7 +91,7 @@ export interface SyncRun {
 export interface ChartData {
   name: string;
   value: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface PieChartData extends ChartData {
