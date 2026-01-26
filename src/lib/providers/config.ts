@@ -1,21 +1,6 @@
-export interface ProviderConfig {
-  name: string;
-  productsApi: string;
-  ordersApi: string;
-  auth?: string;
-  rateLimit?: {
-    requests: number;
-    window: number; // in seconds
-  };
-  variations?: {
-    price: number;
-    discount: number;
-    rating: number;
-    totalPrice: number;
-    quantity: boolean;
-    unitPrice: number;
-  };
-}
+import { ProviderConfig } from "../../types/providers";
+
+export type { ProviderConfig };
 
 export const PROVIDERS: ProviderConfig[] = [
   {

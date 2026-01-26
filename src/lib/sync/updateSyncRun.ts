@@ -1,14 +1,5 @@
 import { prisma } from "../prisma";
-
-export type SyncStatus = "RUNNING" | "SUCCESS" | "FAILED";
-
-interface SyncRunUpdateData {
-  status: SyncStatus;
-  finishedAt: Date;
-  errorMessage?: string;
-  productsFetched?: number;
-  ordersFetched?: number;
-}
+import { SyncStatus, SyncRunUpdateData } from "../../types/sync";
 
 export async function updateSyncRun(
   id: string,

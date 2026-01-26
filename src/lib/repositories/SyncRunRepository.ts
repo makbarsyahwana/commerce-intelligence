@@ -1,23 +1,5 @@
 import { BaseRepository } from "./BaseRepository";
-import { SyncStatus } from "../sync/updateSyncRun";
-
-export interface SyncRunData {
-  startedAt: Date;
-  syncedAt: Date;
-  status: SyncStatus;
-  provider?: string;
-  errorMessage?: string;
-  productsFetched?: number;
-  ordersFetched?: number;
-}
-
-export interface SyncRunUpdateData {
-  status: SyncStatus;
-  finishedAt: Date;
-  errorMessage?: string;
-  productsFetched?: number;
-  ordersFetched?: number;
-}
+import { SyncStatus, SyncRunData, SyncRunUpdateData } from "../../types/sync";
 
 export class SyncRunRepository extends BaseRepository {
   constructor() {

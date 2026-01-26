@@ -1,11 +1,11 @@
 import { prisma } from "../prisma";
 import { ProductResponse } from "./fetchProviders";
 import { ProviderConfig } from "../providers/config";
-import { createLogger, Logger } from "../../lib/logger";
-import { ConcurrentBatchConfig, createDefaultConcurrentConfig } from "./constants";
+import { createLogger } from "../../lib/logger";
+import { Logger } from "../../types/logger";
+import { ConcurrentBatchConfig, PrismaTransaction } from "../../types/sync";
+import { createDefaultConcurrentConfig } from "./constants";
 import { applyProductVariations } from "./variationUtils";
-
-type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
 export async function upsertProductsConcurrent(
   products: ProductResponse[], 

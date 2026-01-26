@@ -2,18 +2,12 @@ import { prisma } from "../prisma";
 import { OrderResponse } from "./fetchProviders";
 import { ProviderConfig } from "../providers/config";
 import { createLogger } from "../../lib/logger";
+import { ConcurrentBatchConfig } from "../../types/sync";
 
 // Add small random variation to make charts more interesting
 function addVariation(value: number, percentage: number = 0.05): number {
   const variation = 1 - percentage + Math.random() * (percentage * 2);
   return Number((value * variation).toFixed(2));
-}
-
-interface ConcurrentBatchConfig {
-  concurrentLimit: number;
-  batchSize: number;
-  batchTimeout: number;
-  pauseBetweenBatches: number;
 }
 
 export async function upsertOrdersConcurrent(

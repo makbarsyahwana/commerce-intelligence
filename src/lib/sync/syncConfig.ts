@@ -1,10 +1,5 @@
-import { ConcurrentBatchConfig, createDefaultConcurrentConfig } from "./constants";
-
-export interface SyncStrategy {
-  name: string;
-  useConcurrent: boolean;
-  concurrentConfig?: ConcurrentBatchConfig;
-}
+import { ConcurrentBatchConfig, SyncStrategy } from "../../types/sync";
+import { createDefaultConcurrentConfig } from "./constants";
 
 // Default configuration - can be overridden by environment
 export const SYNC_CONFIG: SyncStrategy = {

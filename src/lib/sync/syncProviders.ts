@@ -3,15 +3,7 @@ import { fetchProducts, fetchOrders } from "./fetchProviders";
 import { reconcileOrderItems } from "./reconcileOrderItems";
 import { createLogger } from "../../lib/logger";
 import { getSyncService } from "../container/config";
-
-interface ProviderSyncResult {
-  provider: string;
-  success: boolean;
-  productsFetched: number;
-  ordersFetched: number;
-  error?: string;
-  duration: number;
-}
+import { ProviderSyncResult } from "../../types/providers";
 
 export async function syncAllProviders(): Promise<void> {
   const logger = createLogger({ operation: 'syncAllProviders' });

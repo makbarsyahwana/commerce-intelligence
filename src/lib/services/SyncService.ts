@@ -1,19 +1,12 @@
 import { ProductRepository } from "../repositories/ProductRepository";
 import { OrderRepository } from "../repositories/OrderRepository";
 import { SyncRunRepository } from "../repositories/SyncRunRepository";
-import { createLogger, Logger } from "../logger";
+import { createLogger } from "../logger";
+import { Logger } from "../../types/logger";
 import { ProductResponse, OrderResponse } from "../sync/fetchProviders";
 import { ProviderConfig } from "../providers/config";
 import { getSyncStrategy } from "../sync/syncConfig";
-import { ConcurrentBatchConfig } from "../sync/constants";
-
-export interface SyncResult {
-  success: boolean;
-  productsProcessed: number;
-  ordersProcessed: number;
-  error?: string;
-  duration: number;
-}
+import { ConcurrentBatchConfig, SyncResult } from "../../types/sync";
 
 export class SyncService {
   private logger: Logger;

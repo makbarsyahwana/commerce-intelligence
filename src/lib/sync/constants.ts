@@ -1,4 +1,6 @@
 // Sync configuration constants
+import { ConcurrentBatchConfig } from "../../types/sync";
+
 export const SYNC_CONSTANTS = {
   // Default variation percentages for demo data
   VARIATIONS: {
@@ -19,14 +21,6 @@ export const SYNC_CONSTANTS = {
   // Decimal precision for financial calculations
   DECIMAL_PRECISION: 2,
 } as const;
-
-// Type for concurrent batch configuration
-export interface ConcurrentBatchConfig {
-  concurrentLimit: number;
-  batchSize: number;
-  batchTimeout: number;
-  pauseBetweenBatches: number;
-}
 
 // Create default configuration
 export function createDefaultConcurrentConfig(): ConcurrentBatchConfig {

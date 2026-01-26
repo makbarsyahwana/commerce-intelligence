@@ -1,4 +1,5 @@
 import { SYNC_CONSTANTS } from "./constants";
+import { ProductVariations, OrderVariations } from "../../types/sync";
 
 /**
  * Add small random variation to make charts more interesting
@@ -14,12 +15,6 @@ export function addVariation(value: number, percentage: number = SYNC_CONSTANTS.
 /**
  * Apply provider-specific variations to product data
  */
-export interface ProductVariations {
-  price?: number;
-  discount?: number;
-  rating?: number;
-}
-
 export function applyProductVariations(
   price: number,
   discount: number | null,
@@ -36,10 +31,6 @@ export function applyProductVariations(
 /**
  * Apply provider-specific variations to order data
  */
-export interface OrderVariations {
-  totalPrice?: number;
-}
-
 export function applyOrderVariations(
   totalPrice: number,
   variations: OrderVariations = {}

@@ -1,7 +1,4 @@
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
-}
+import { RateLimitEntry } from "../../types/providers";
 
 class RateLimiter {
   private static instances = new Map<string, RateLimiter>();
