@@ -24,3 +24,8 @@ export { default as RecentOrdersTable } from './dashboard/tables/RecentOrdersTab
 export { default as TopProductsTable } from './dashboard/tables/TopProductsTable';
 
 export { default as SyncStatus } from './dashboard/status/SyncStatus';
+
+// Page Components
+export { default as ErrorPage } from './pages/ErrorPage';
+export { default as LoadingPage } from './pages/LoadingPage';
+export { default as NotFoundPage } from './pages/NotFoundPage';
