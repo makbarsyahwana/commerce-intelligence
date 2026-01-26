@@ -1,65 +1,203 @@
-import Image from "next/image";
+import { getMetricCards, getOrdersByStatus, getProductsByCategory, getRevenueByCategory } from '@/lib/dashboardQueries';
+import { Metadata } from 'next';
+import { 
+  RecentOrdersTable, 
+  TopProductsTable, 
+  OrdersByStatusChart, 
+  ProductsByCategoryChart, 
+  RevenueByCategoryChart, 
+  SyncStatus 
+} from '@/components';
+import ModernDashboardLayout from '@/components/ui/organisms/ModernDashboardLayout';
+import EnhancedMetricsGrid from '@/components/ui/organisms/EnhancedMetricsGrid';
+import GlassCard from '@/components/ui/atoms/GlassCard';
 
-export default function Home() {
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Dashboard',
+    description: 'Comprehensive e-commerce analytics with real-time metrics, order tracking, and sync monitoring.',
+    openGraph: {
+      title: 'E-commerce Analytics Dashboard',
+      description: 'Real-time insights into your e-commerce operations',
+      url: '/',
+    },
+  };
+}
+
+const DASHBOARD_TITLE = 'E-commerce Analytics Dashboard';
+const DASHBOARD_SUBTITLE = 'Real-time insights into your e-commerce operations';
+
+function convertDecimalToNumber(value: any): number {
+  return Number(value);
+}
+
+function createMetricData(metrics: any) {
+  return [
+    {
+      title: 'Total Products',
+      value: metrics.totalProducts.toLocaleString(),
+      icon: getProductIcon(),
+      trend: { value: 12, direction: 'up' as const }
+    },
+    {
+      title: 'Total Orders',
+      value: metrics.totalOrders.toLocaleString(),
+      icon: getOrderIcon(),
+      trend: { value: 8, direction: 'up' as const }
+    },
+    {
+      title: 'Total Revenue',
+      value: `$${metrics.totalRevenue.toLocaleString()}`,
+      icon: getRevenueIcon(),
+      trend: { value: 23, direction: 'up' as const }
+    },
+    {
+      title: 'Providers',
+      value: metrics.totalProviders,
+      icon: getProviderIcon(),
+      trend: { value: 0, direction: 'neutral' as const }
+    }
+  ];
+}
+
+function getProductIcon() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+    </svg>
+  );
+}
+
+function getOrderIcon() {
+  return (
+    <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+  );
+}
+
+function getRevenueIcon() {
+  return (
+    <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+    </svg>
+  );
+}
+
+function getProviderIcon() {
+  return (
+    <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  );
+}
+
+export default async function Dashboard() {
+  const dashboardData = await fetchDashboardData();
+  const chartData = prepareChartData(dashboardData);
+  const metrics = createMetricData(dashboardData.metrics);
+
+  return (
+    <ModernDashboardLayout 
+      title={DASHBOARD_TITLE}
+      subtitle={DASHBOARD_SUBTITLE}
+      backgroundVariant="aurora"
+      glassVariant="frosted"
+    >
+      <DashboardSections 
+        metrics={metrics}
+        chartData={chartData}
+      />
+    </ModernDashboardLayout>
+  );
+}
+
+async function fetchDashboardData() {
+  const [metrics, ordersByStatus, productsByCategory, revenueByCategory] = await Promise.all([
+    getMetricCards(),
+    getOrdersByStatus(),
+    getProductsByCategory(),
+    getRevenueByCategory()
+  ]);
+
+  return { metrics, ordersByStatus, productsByCategory, revenueByCategory };
+}
+
+function prepareChartData(data: any) {
+  return {
+    ordersByStatus: data.ordersByStatus.map((order: any) => ({
+      ...order,
+      totalRevenue: convertDecimalToNumber(order.totalRevenue)
+    })),
+    productsByCategory: data.productsByCategory.map((category: any) => ({
+      ...category,
+      avgPrice: convertDecimalToNumber(category.avgPrice),
+      totalValue: convertDecimalToNumber(category.totalValue)
+    })),
+    revenueByCategory: data.revenueByCategory
+  };
+}
+
+interface DashboardSectionsProps {
+  metrics: any[];
+  chartData: any;
+}
+
+function DashboardSections({ metrics, chartData }: DashboardSectionsProps) {
+  return (
+    <>
+      <EnhancedMetricsGrid variant="glass" metrics={metrics} />
+      <ChartsSection chartData={chartData} />
+      <TablesSection />
+      <SyncStatusSection />
+    </>
+  );
+}
+
+function ChartsSection({ chartData }: { chartData: any }) {
+  return (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <GlassCard variant="frosted" blur="lg" className="p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Orders by Status</h2>
+          <OrdersByStatusChart data={chartData.ordersByStatus} />
+        </GlassCard>
+        
+        <GlassCard variant="frosted" blur="lg" className="p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Products by Category</h2>
+          <ProductsByCategoryChart data={chartData.productsByCategory} />
+        </GlassCard>
+      </div>
+
+      <GlassCard variant="frosted" blur="lg" className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue by Category</h2>
+        <RevenueByCategoryChart data={chartData.revenueByCategory} />
+      </GlassCard>
+    </>
+  );
+}
+
+function TablesSection() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <GlassCard variant="frosted" blur="lg" className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Orders</h2>
+        <RecentOrdersTable limit={5} />
+      </GlassCard>
+      
+      <GlassCard variant="frosted" blur="lg" className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Products</h2>
+        <TopProductsTable limit={5} />
+      </GlassCard>
     </div>
+  );
+}
+
+function SyncStatusSection() {
+  return (
+    <GlassCard variant="frosted" blur="lg" className="p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sync Status</h2>
+      <SyncStatus />
+    </GlassCard>
   );
 }
