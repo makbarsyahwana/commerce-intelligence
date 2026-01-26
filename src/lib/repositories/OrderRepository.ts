@@ -4,9 +4,6 @@ import { ProviderConfig } from "../providers/config";
 import { applyOrderVariations } from "../sync/variationUtils";
 
 export class OrderRepository extends BaseRepository {
-  constructor() {
-    super('Order');
-  }
 
   async upsertOrder(order: OrderResponse, provider: ProviderConfig, syncedAt: Date) {
     try {

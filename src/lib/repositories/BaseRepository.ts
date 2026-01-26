@@ -1,13 +1,11 @@
-import { prisma } from "../prisma";
-import { createLogger, Logger } from "../logger";
+import { prisma } from "../container/prisma";
+import { createLogger } from "../logger";
+
+const logger = createLogger({ operation: 'base-repository' });
 
 export abstract class BaseRepository {
   protected prisma = prisma;
-  protected logger: Logger;
-
-  constructor(entityName: string) {
-    this.logger = createLogger({ operation: `${entityName}Repository` });
-  }
+  protected logger = logger;
 
   protected handleError(error: unknown, operation: string): never {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

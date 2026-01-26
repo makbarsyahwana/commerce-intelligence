@@ -2,12 +2,9 @@ import { BaseRepository } from "./BaseRepository";
 import { ProductResponse } from "../sync/fetchProviders";
 import { ProviderConfig } from "../providers/config";
 import { applyProductVariations } from "../sync/variationUtils";
-import { prisma } from "../prisma";
+import { prisma } from "../container/prisma";
 
 export class ProductRepository extends BaseRepository {
-  constructor() {
-    super('Product');
-  }
 
   async upsertProduct(product: ProductResponse, provider: ProviderConfig, syncedAt: Date) {
     try {

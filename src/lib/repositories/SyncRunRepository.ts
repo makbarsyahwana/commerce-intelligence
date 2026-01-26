@@ -2,9 +2,6 @@ import { BaseRepository } from "./BaseRepository";
 import { SyncStatus, SyncRunData, SyncRunUpdateData } from "../../types/sync";
 
 export class SyncRunRepository extends BaseRepository {
-  constructor() {
-    super('SyncRun');
-  }
 
   async create(data: SyncRunData) {
     try {
