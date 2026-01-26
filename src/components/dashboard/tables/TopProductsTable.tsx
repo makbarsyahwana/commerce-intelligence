@@ -1,24 +1,12 @@
-import { getTopProducts } from '@/lib/dashboardQueries';
-
-interface TopProduct {
-  id: string;
-  name: string;
-  provider: string;
-  category: string;
-  price: number;
-  availability: boolean;
-  rating: number | null;
-  discount: number | null;
-  orderCount: number;
-  totalQuantity: number;
-}
+import { getTopProducts } from '@/lib/services/dashboardQueries';
+import type { TopProduct } from '@/types/dashboard';
 
 interface TopProductsTableProps {
   limit?: number;
 }
 
 export default async function TopProductsTable({ limit = 5 }: TopProductsTableProps) {
-  const topProducts = await getTopProducts(limit);
+  const topProducts: TopProduct[] = await getTopProducts(limit);
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

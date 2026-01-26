@@ -1,27 +1,17 @@
-import { getRecentOrders } from '@/lib/dashboardQueries';
+import { getRecentOrders } from '@/lib/services/dashboardQueries';
 import DataTable from '@/components/ui/molecules/DataTable';
 import Badge from '@/components/ui/atoms/Badge';
-
-interface RecentOrder {
-  id: string;
-  providerOrderId: string;
-  provider: string;
-  status: string;
-  totalPrice: number;
-  createdAt: Date;
-  _count: {
-    orderItems: number;
-  };
-}
+import type { RecentOrder } from '@/types/dashboard';
+import type { Column } from '@/components/ui/molecules/DataTable';
 
 interface RecentOrdersTableProps {
   limit?: number;
 }
 
 export default async function RecentOrdersTable({ limit = 5 }: RecentOrdersTableProps) {
-  const recentOrders = await getRecentOrders(limit);
+  const recentOrders: RecentOrder[] = await getRecentOrders(limit);
 
-  const columns = [
+  const columns: Column<RecentOrder>[] = [
     {
       key: 'providerOrderId' as keyof RecentOrder,
       header: 'Order ID',
@@ -30,41 +20,41 @@ export default async function RecentOrdersTable({ limit = 5 }: RecentOrdersTable
     {
       key: 'provider' as keyof RecentOrder,
       header: 'Provider',
-      render: (value: string) => (
-        <span className="text-gray-500">{value}</span>
+      render: (_value, row) => (
+        <span className="text-gray-500">{row.provider}</span>
       )
     },
     {
       key: 'status' as keyof RecentOrder,
       header: 'Status',
-      render: (status: string) => (
+      render: (_value, row) => (
         <Badge variant={
-          status === 'completed' ? 'success' :
-          status === 'pending' ? 'warning' :
-          status === 'cancelled' ? 'error' : 'default'
+          row.status === 'completed' ? 'success' :
+          row.status === 'pending' ? 'warning' :
+          row.status === 'cancelled' ? 'error' : 'default'
         }>
-          {status}
+          {row.status}
         </Badge>
       )
     },
     {
       key: '_count' as keyof RecentOrder,
       header: 'Items',
-      render: (count: { orderItems: number }) => count.orderItems
+      render: (_value, row) => row._count.orderItems
     },
     {
       key: 'totalPrice' as keyof RecentOrder,
       header: 'Total',
-      render: (price: number) => (
+      render: (_value, row) => (
         <span className="font-medium text-gray-900">
-          ${Number(price).toLocaleString()}
+          ${Number(row.totalPrice).toLocaleString()}
         </span>
       )
     },
     {
       key: 'createdAt' as keyof RecentOrder,
       header: 'Date',
-      render: (date: Date) => new Date(date).toLocaleDateString()
+      render: (_value, row) => new Date(row.createdAt).toLocaleDateString()
     }
   ];
 
