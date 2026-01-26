@@ -1,15 +1,11 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-
-interface RevenueCategoryData {
-  category: string;
-  orderCount: number;
-  quantity: number;
-}
+import type { RevenueCategory } from '@/types/dashboard';
+import type { RechartsTooltipProps } from '@/types/charts';
 
 interface RevenueByCategoryChartProps {
-  data: RevenueCategoryData[];
+  data: RevenueCategory[];
 }
 
 const COLORS = [
@@ -23,22 +19,27 @@ const COLORS = [
   '#f97316', // orange
 ];
 
+type RevenueCategoryChartDatum = RevenueCategory & {
+  displayName: string;
+  avgOrderValue: number;
+};
+
 export default function RevenueByCategoryChart({ data }: RevenueByCategoryChartProps) {
-  const chartData = data.map(item => ({
+  const chartData: RevenueCategoryChartDatum[] = data.map((item) => ({
     ...item,
     displayName: item.category === 'Uncategorized' ? 'Other' : item.category,
     avgOrderValue: item.orderCount > 0 ? Math.round(item.quantity / item.orderCount) : 0,
   }));
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps<RevenueCategoryChartDatum>) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const tooltipData = payload[0].payload;
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{data.displayName}</p>
-          <p className="text-sm text-gray-600">Orders: {data.orderCount}</p>
-          <p className="text-sm text-gray-600">Units Sold: {data.quantity.toLocaleString()}</p>
-          <p className="text-sm text-gray-600">Avg Units/Order: {data.avgOrderValue}</p>
+          <p className="font-semibold text-gray-900">{tooltipData.displayName}</p>
+          <p className="text-sm text-gray-600">Orders: {tooltipData.orderCount}</p>
+          <p className="text-sm text-gray-600">Units Sold: {tooltipData.quantity.toLocaleString()}</p>
+          <p className="text-sm text-gray-600">Avg Units/Order: {tooltipData.avgOrderValue}</p>
         </div>
       );
     }

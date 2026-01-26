@@ -1,16 +1,14 @@
 'use client';
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-
-interface ProductCategoryData {
-  category: string;
-  count: number;
-  avgPrice: number;
-  totalValue: number;
-}
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import type { ProductCategory } from '@/types/dashboard';
+import type {
+  RechartsPieLabelProps,
+  RechartsTooltipProps,
+} from '@/types/charts';
 
 interface ProductsByCategoryChartProps {
-  data: ProductCategoryData[];
+  data: ProductCategory[];
 }
 
 const COLORS = [
@@ -25,27 +23,42 @@ const COLORS = [
 ];
 
 export default function ProductsByCategoryChart({ data }: ProductsByCategoryChartProps) {
-  const chartData = data.map(item => ({
+  type ProductCategoryChartDatum = ProductCategory & {
+    displayName: string;
+  };
+
+  const chartData: ProductCategoryChartDatum[] = data.map((item) => ({
     ...item,
     displayName: item.category === 'Uncategorized' ? 'Other' : item.category,
   }));
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps<ProductCategoryChartDatum>) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const tooltipData = payload[0].payload;
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{data.displayName}</p>
-          <p className="text-sm text-gray-600">Products: {data.count}</p>
-          <p className="text-sm text-gray-600">Avg Price: ${data.avgPrice.toFixed(2)}</p>
-          <p className="text-sm text-gray-600">Total Value: ${data.totalValue.toLocaleString()}</p>
+          <p className="font-semibold text-gray-900">{tooltipData.displayName}</p>
+          <p className="text-sm text-gray-600">Products: {tooltipData.count}</p>
+          <p className="text-sm text-gray-600">Avg Price: ${tooltipData.avgPrice.toFixed(2)}</p>
+          <p className="text-sm text-gray-600">Total Value: ${tooltipData.totalValue.toLocaleString()}</p>
         </div>
       );
     }
     return null;
   };
 
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: RechartsPieLabelProps) => {
+    if (
+      cx === undefined ||
+      cy === undefined ||
+      midAngle === undefined ||
+      innerRadius === undefined ||
+      outerRadius === undefined ||
+      percent === undefined
+    ) {
+      return null;
+    }
+
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
     const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
@@ -95,18 +108,23 @@ export default function ProductsByCategoryChart({ data }: ProductsByCategoryChar
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              verticalAlign="bottom" 
-              height={36}
-              formatter={(value, entry: any) => (
-                <span className="text-xs text-gray-600">
-                  {entry.payload.displayName} ({entry.payload.count})
-                </span>
-              )}
-            />
           </PieChart>
         </ResponsiveContainer>
       )}
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {chartData.map((item, index) => (
+          <div key={item.category} className="flex items-center gap-2">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+            />
+            <span className="text-xs text-gray-600">
+              {item.displayName} ({item.count})
+            </span>
+          </div>
+        ))}
+      </div>
       
       {/* Summary Stats */}
       <div className="mt-4 grid grid-cols-2 gap-4">

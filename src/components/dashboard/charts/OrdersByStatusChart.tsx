@@ -1,15 +1,11 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-
-interface OrderStatusData {
-  status: string;
-  count: number;
-  totalRevenue: number;
-}
+import type { OrderStatus } from '@/types/dashboard';
+import type { RechartsTooltipProps } from '@/types/charts';
 
 interface OrdersByStatusChartProps {
-  data: OrderStatusData[];
+  data: OrderStatus[];
 }
 
 const COLORS = {
@@ -21,19 +17,23 @@ const COLORS = {
 };
 
 export default function OrdersByStatusChart({ data }: OrdersByStatusChartProps) {
-  const chartData = data.map(item => ({
+  type OrderStatusChartDatum = OrderStatus & {
+    displayName: string;
+  };
+
+  const chartData: OrderStatusChartDatum[] = data.map((item) => ({
     ...item,
     displayName: item.status.charAt(0).toUpperCase() + item.status.slice(1),
   }));
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps<OrderStatusChartDatum>) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const tooltipData = payload[0].payload;
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{data.displayName}</p>
-          <p className="text-sm text-gray-600">Orders: {data.count}</p>
-          <p className="text-sm text-gray-600">Revenue: ${Number(data.totalRevenue).toLocaleString()}</p>
+          <p className="font-semibold text-gray-900">{tooltipData.displayName}</p>
+          <p className="text-sm text-gray-600">Orders: {tooltipData.count}</p>
+          <p className="text-sm text-gray-600">Revenue: ${Number(tooltipData.totalRevenue).toLocaleString()}</p>
         </div>
       );
     }
