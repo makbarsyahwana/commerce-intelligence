@@ -1,7 +1,14 @@
-import { prisma } from "../prisma";
+import { prisma } from "../container/prisma";
 import { OrderResponse } from "./fetchProviders";
 import { ProviderConfig } from "../providers/config";
 import { createLogger } from "../../lib/logger";
+import { PrismaTransaction } from "../../types/sync";
+
+// Type for product selection result
+type ProductSelectResult = {
+  id: string;
+  providerProductId: number;
+};
 
 // Add small random variation to make charts more interesting
 function addVariation(value: number, percentage: number = 0.05): number {
@@ -101,7 +108,7 @@ export async function reconcileOrderItems(
               });
 
               const productMap = new Map(
-                products.map(p => [p.providerProductId.toString(), p.id])
+                products.map((p: ProductSelectResult) => [p.providerProductId.toString(), p.id])
               );
 
               const validItemsToCreate = itemsToCreate

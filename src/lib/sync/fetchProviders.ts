@@ -1,5 +1,5 @@
 import { ProviderConfig } from "../providers/config";
-import { checkRateLimit } from "../providers/rateLimit";
+import { checkRateLimit } from "../providers/providerRateLimit";
 import { ProductResponse, OrderResponse } from "../../types/api";
 
 export type { ProductResponse, OrderResponse };
