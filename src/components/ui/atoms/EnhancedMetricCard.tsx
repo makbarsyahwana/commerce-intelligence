@@ -1,4 +1,5 @@
-import { HTMLAttributes, forwardRef, useState } from 'react';
+import { HTMLAttributes, forwardRef } from 'react';
+import type { ReactNode } from 'react';
 
 export interface EnhancedMetricCardProps extends HTMLAttributes<HTMLDivElement> {
   title: string;
@@ -7,7 +8,7 @@ export interface EnhancedMetricCardProps extends HTMLAttributes<HTMLDivElement> 
     value: number;
     direction: 'up' | 'down' | 'neutral';
   };
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   loading?: boolean;
   variant?: 'default' | 'glass' | 'neon' | 'gradient';
   animated?: boolean;
@@ -25,9 +26,7 @@ const EnhancedMetricCard = forwardRef<HTMLDivElement, EnhancedMetricCardProps>(
     animated = true,
     ...props 
   }, ref) => {
-    const [isHovered, setIsHovered] = useState(false);
-
-    const baseStyles = 'relative overflow-hidden transition-all duration-300 rounded-2xl';
+    const baseStyles = 'group relative overflow-hidden transition-all duration-300 rounded-2xl';
     
     const variants = {
       default: 'bg-white shadow-lg hover:shadow-xl',
@@ -58,25 +57,23 @@ const EnhancedMetricCard = forwardRef<HTMLDivElement, EnhancedMetricCardProps>(
       <div 
         className={classes} 
         ref={ref} 
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         {...props}
       >
         {/* Animated background effect */}
         {variant === 'gradient' && animated && (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         )}
         
         {/* Neon glow effect */}
-        {variant === 'neon' && isHovered && (
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-xl"></div>
+        {variant === 'neon' && animated && (
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         )}
         
         <div className="relative p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</h3>
             {icon && (
-              <div className={`transition-transform duration-300 ${isHovered ? 'scale-110' : 'scale-100'}`}>
+              <div className="transition-transform duration-300 scale-100 group-hover:scale-110">
                 {icon}
               </div>
             )}
