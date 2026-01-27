@@ -11,6 +11,18 @@ export interface MetricCard {
   loading?: boolean;
 }
 
+export interface TrendInfo {
+  value: number;
+  direction: 'up' | 'down' | 'neutral';
+}
+
+export interface DashboardTrends {
+  products: TrendInfo;
+  orders: TrendInfo;
+  revenue: TrendInfo;
+  providers: TrendInfo;
+}
+
 export interface OrderStatus {
   status: string;
   count: number;
@@ -35,6 +47,7 @@ export interface DashboardMetrics {
   totalOrders: number;
   totalRevenue: number;
   totalProviders: number;
+  trends: DashboardTrends;
   latestSyncRun: SyncRun | null;
   dateRange: { from: Date; to: Date } | null;
   [key: string]: unknown;

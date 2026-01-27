@@ -28,10 +28,13 @@ export interface SyncRunUpdateData {
   ordersFetched?: number;
 }
 
+export type SyncExecutionMode = "local" | "trigger-batch";
+
 export interface SyncStrategy {
   name: string;
   useConcurrent: boolean;
   concurrentConfig?: ConcurrentBatchConfig;
+  executionMode?: SyncExecutionMode;
 }
 
 export interface ConcurrentBatchConfig {
@@ -53,4 +56,4 @@ export interface OrderVariations {
 }
 
 // Prisma Transaction Type
-export type PrismaTransaction = Parameters<Parameters<typeof import('../lib/prisma').prisma.$transaction>[0]>[0];
+export type PrismaTransaction = Parameters<Parameters<typeof import('../lib/container/prisma').prisma.$transaction>[0]>[0];
