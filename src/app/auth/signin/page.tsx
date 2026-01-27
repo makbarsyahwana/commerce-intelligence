@@ -1,13 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function SignIn() {
+  return (
+    <Suspense fallback={<SignInLoading />}> 
+      <SignInForm />
+    </Suspense>
+  );
+}
+
+function SignInLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+
+        <div className="h-10 rounded-md bg-gray-200 animate-pulse" />
+        <div className="h-10 rounded-md bg-gray-200 animate-pulse" />
+        <div className="h-10 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
+function SignInForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,12 +50,13 @@ export default function SignIn() {
         email,
         password,
         redirect: false,
+        callbackUrl,
       });
 
       if (result?.error) {
         setError('Invalid credentials');
       } else {
-        window.location.href = '/'; // Redirect to dashboard
+        window.location.href = result?.url || callbackUrl;
       }
     } catch (error) {
       setError('An error occurred');
@@ -41,10 +73,11 @@ export default function SignIn() {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Demo: Use any email with password "demo123"
-          </p>
-          <p className="text-center text-sm text-gray-600">
-            Admin: admin@example.com with password "admin123"
+            Don&apos;t have an account?
+            {' '}
+            <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-500 font-medium">
+              Create one
+            </Link>
           </p>
         </div>
         
