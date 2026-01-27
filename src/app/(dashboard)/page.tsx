@@ -1,16 +1,19 @@
-import { getMetricCards, getOrdersByStatus, getProductsByCategory, getRecentOrders, getTopProducts, getRevenueByCategory } from '@/lib/services/dashboardQueries';
+import { getMetricCards, getOrdersByStatus, getProductsByCategory, getRevenueByCategory } from '@/lib/services/dashboardQueries';
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { 
   RecentOrdersTable, 
   TopProductsTable, 
-  OrdersByStatusChart, 
-  ProductsByCategoryChart, 
-  RevenueByCategoryChart, 
   SyncStatus 
 } from '@/components';
+import OrdersByStatusChart from '@/components/dashboard/charts/OrdersByStatusChart';
+import ProductsByCategoryChart from '@/components/dashboard/charts/ProductsByCategoryChart';
+import RevenueByCategoryChart from '@/components/dashboard/charts/RevenueByCategoryChart';
 import ModernDashboardLayout from '@/components/ui/organisms/ModernDashboardLayout';
 import EnhancedMetricsGrid from '@/components/ui/organisms/EnhancedMetricsGrid';
 import GlassCard from '@/components/ui/atoms/GlassCard';
+import SyncNowButton from '@/components/dashboard/status/SyncNowButton';
+import { auth } from '@/app/api/auth';
 import type { DashboardChartData, DashboardDataBundle, DashboardMetrics, MetricCard } from '@/types/dashboard';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,6 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const DASHBOARD_TITLE = 'E-commerce Analytics Dashboard';
 const DASHBOARD_SUBTITLE = 'Real-time insights into your e-commerce operations';
+const SIGN_IN_PATH = '/auth/signin';
+const SIGN_IN_CALLBACK_URL = '/';
 
 function createMetricData(metrics: DashboardMetrics): MetricCard[] {
   return [
@@ -34,25 +39,25 @@ function createMetricData(metrics: DashboardMetrics): MetricCard[] {
       title: 'Total Products',
       value: metrics.totalProducts.toLocaleString(),
       icon: getProductIcon(),
-      trend: { value: 12, direction: 'up' as const }
+      trend: metrics.trends.products,
     },
     {
       title: 'Total Orders',
       value: metrics.totalOrders.toLocaleString(),
       icon: getOrderIcon(),
-      trend: { value: 8, direction: 'up' as const }
+      trend: metrics.trends.orders,
     },
     {
       title: 'Total Revenue',
       value: `$${metrics.totalRevenue.toLocaleString()}`,
       icon: getRevenueIcon(),
-      trend: { value: 23, direction: 'up' as const }
+      trend: metrics.trends.revenue,
     },
     {
       title: 'Providers',
       value: metrics.totalProviders,
       icon: getProviderIcon(),
-      trend: { value: 0, direction: 'neutral' as const }
+      trend: metrics.trends.providers,
     }
   ];
 }
@@ -90,6 +95,11 @@ function getProviderIcon() {
 }
 
 export default async function Dashboard() {
+  const session = await auth();
+  if (!session?.user) {
+    redirect(`${SIGN_IN_PATH}?callbackUrl=${encodeURIComponent(SIGN_IN_CALLBACK_URL)}`);
+  }
+
   const dashboardData = await fetchDashboardData();
   const chartData = prepareChartData(dashboardData);
   const metrics = createMetricData(dashboardData.metrics);
@@ -98,6 +108,7 @@ export default async function Dashboard() {
     <ModernDashboardLayout 
       title={DASHBOARD_TITLE}
       subtitle={DASHBOARD_SUBTITLE}
+      actions={<SyncNowButton />}
       backgroundVariant="aurora"
       glassVariant="frosted"
     >
@@ -170,24 +181,12 @@ function ChartsSection({ chartData }: { chartData: DashboardChartData }) {
 function TablesSection() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <GlassCard variant="frosted" blur="lg" className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Orders</h2>
-        <RecentOrdersTable limit={5} />
-      </GlassCard>
-      
-      <GlassCard variant="frosted" blur="lg" className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Products</h2>
-        <TopProductsTable limit={5} />
-      </GlassCard>
+      <RecentOrdersTable limit={5} />
+      <TopProductsTable limit={5} />
     </div>
   );
 }
 
 function SyncStatusSection() {
-  return (
-    <GlassCard variant="frosted" blur="lg" className="p-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sync Status</h2>
-      <SyncStatus />
-    </GlassCard>
-  );
+  return <SyncStatus />;
 }
