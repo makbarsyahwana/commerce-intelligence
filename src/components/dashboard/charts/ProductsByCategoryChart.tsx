@@ -79,38 +79,38 @@ export default function ProductsByCategoryChart({ data }: ProductsByCategoryChar
     );
   };
 
+  if (data.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <p>No product data available</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Products by Category</h2>
-      
-      {data.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <p>No product data available</p>
-        </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={CustomLabel}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="count"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-      )}
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={CustomLabel}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="count"
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+        </PieChart>
+      </ResponsiveContainer>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {chartData.map((item, index) => (
@@ -126,7 +126,6 @@ export default function ProductsByCategoryChart({ data }: ProductsByCategoryChar
         ))}
       </div>
       
-      {/* Summary Stats */}
       <div className="mt-4 grid grid-cols-2 gap-4">
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500">Total Categories</p>
