@@ -8,6 +8,8 @@
 import NextAuth from 'next-auth';
 import type { Session, User } from 'next-auth';
 import type { AuthJWT } from '@/types/auth';
+import { prisma } from '@/lib/container/prisma';
+import { verifyPassword } from '@/lib/auth/password';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // Configure one or more authentication providers
@@ -62,7 +64,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     //   },
     // },
 
-    // Credentials provider for demo/admin access
+    // Credentials provider
     {
       id: 'credentials',
       name: 'Credentials',
@@ -72,27 +74,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials: { email?: string; password?: string }) {
-        // Demo credentials - in production, verify against database
-        if (credentials?.email === 'admin@example.com' && credentials?.password === 'admin123') {
-          return {
-            id: '1',
-            email: 'admin@example.com',
-            name: 'Admin User',
-            role: 'admin',
-          };
-        }
-        
-        // For demo purposes, allow any email with password "demo123"
-        if (credentials?.password === 'demo123') {
-          return {
-            id: '2',
-            email: credentials.email,
-            name: 'Demo User',
-            role: 'user',
-          };
-        }
-        
-        return null;
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user) return null;
+
+        const ok = await verifyPassword(credentials.password, user.passwordHash);
+        if (!ok) return null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name ?? user.email,
+          role: user.role,
+        };
       },
     },
   ],
@@ -139,6 +137,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   // Security
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   useSecureCookies: process.env.NODE_ENV === 'production',
 });
