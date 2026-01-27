@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { syncAllProviders } from '@/lib/sync/syncProviders';
+import { tasks } from '@trigger.dev/sdk';
 import { createLogger } from '@/lib/container/logger';
 import { auth } from '../../auth/index';
 
@@ -27,28 +27,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.info('Starting manual sync via API', {
+    logger.info('Triggering manual sync via Trigger.dev', {
       userId: session.user.id,
       userEmail: session.user.email,
     });
 
-    // Trigger the sync process
-    await syncAllProviders();
+    // Trigger the sync task via Trigger.dev
+    const handle = await tasks.trigger("sync-ecommerce-snapshot" as const, {});
 
-    logger.info('Manual sync completed successfully', {
+    logger.info('Manual sync triggered successfully', {
       userId: session.user.id,
+      runId: handle.id,
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Sync completed successfully',
+      message: 'Sync triggered successfully',
+      runId: handle.id,
       timestamp: new Date().toISOString(),
     });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
-    logger.error('Manual sync failed', {
+    logger.error('Manual sync trigger failed', {
       error: errorMessage,
       stack: error instanceof Error ? error.stack : undefined,
     });
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Sync failed',
+        error: 'Sync trigger failed',
         message: errorMessage,
         timestamp: new Date().toISOString(),
       },
