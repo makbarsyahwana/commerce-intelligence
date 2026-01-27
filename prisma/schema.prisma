@@ -94,6 +94,16 @@ model SyncRun {
   @@index([startedAt(sort: Desc)])  // Added for latest sync run query
 }
 
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         String   @default("user")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 enum SyncStatus {
   RUNNING
   SUCCESS
