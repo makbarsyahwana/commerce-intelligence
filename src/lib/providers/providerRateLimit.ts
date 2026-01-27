@@ -12,7 +12,7 @@
  * - Automatic retry timing with clear error messages
  */
 import { RateLimitEntry } from "../../types/providers";
-import { createLogger } from "../logger";
+import { createLogger } from "../container/logger";
 
 const logger = createLogger({ operation: 'provider-rate-limit' });
 
