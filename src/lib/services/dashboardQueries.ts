@@ -2,6 +2,8 @@ import { prisma } from "../container/prisma";
 import { createLogger } from "../container/logger";
 import type {
   DashboardMetrics,
+  DashboardTrends,
+  TrendInfo,
   OrderStatus,
   ProductCategory,
   RevenueCategory,
@@ -18,6 +20,26 @@ export async function getMetricCards(dateRange?: { from: Date; to: Date }) {
   try {
     logger.debug('Fetching metric cards data', { dateRange });
 
+    const resolvedTo = dateRange?.to ?? new Date();
+    const resolvedFrom = dateRange?.from ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const rangeMs = resolvedTo.getTime() - resolvedFrom.getTime();
+    const previousTo = resolvedFrom;
+    const previousFrom = new Date(resolvedFrom.getTime() - rangeMs);
+
+    const currentCreatedAtFilter = {
+      createdAt: {
+        gte: resolvedFrom,
+        lte: resolvedTo,
+      },
+    };
+
+    const previousCreatedAtFilter = {
+      createdAt: {
+        gte: previousFrom,
+        lte: previousTo,
+      },
+    };
+
     const dateFilter = dateRange ? {
       createdAt: {
         gte: dateRange.from,
@@ -25,12 +47,36 @@ export async function getMetricCards(dateRange?: { from: Date; to: Date }) {
       }
     } : {};
 
+    const buildTrend = (current: number, previous: number): TrendInfo => {
+      if (previous === 0 && current === 0) {
+        return { value: 0, direction: 'neutral' };
+      }
+
+      if (previous === 0) {
+        return { value: 100, direction: 'up' };
+      }
+
+      const pct = ((current - previous) / previous) * 100;
+      const rounded = Math.round(Math.abs(pct));
+      if (pct > 0.5) return { value: rounded, direction: 'up' };
+      if (pct < -0.5) return { value: rounded, direction: 'down' };
+      return { value: 0, direction: 'neutral' };
+    };
+
     const [
       totalProducts,
       totalOrders,
       totalRevenue,
       totalProviders,
-      latestSyncRun
+      latestSyncRun,
+      productsCurrent,
+      productsPrevious,
+      ordersCurrent,
+      ordersPrevious,
+      revenueCurrent,
+      revenuePrevious,
+      providersCurrent,
+      providersPrevious,
     ] = await Promise.all([
       // Total products count
       prisma.product.count(),
@@ -66,14 +112,50 @@ export async function getMetricCards(dateRange?: { from: Date; to: Date }) {
           productsFetched: true,
           ordersFetched: true
         }
-      })
+      }),
+
+      // Trends (default: last 7 days vs previous 7 days)
+      prisma.product.count({ where: currentCreatedAtFilter }),
+      prisma.product.count({ where: previousCreatedAtFilter }),
+
+      prisma.order.count({ where: currentCreatedAtFilter }),
+      prisma.order.count({ where: previousCreatedAtFilter }),
+
+      prisma.order.aggregate({
+        where: {
+          status: 'completed',
+          ...currentCreatedAtFilter,
+        },
+        _sum: { totalPrice: true },
+      }),
+      prisma.order.aggregate({
+        where: {
+          status: 'completed',
+          ...previousCreatedAtFilter,
+        },
+        _sum: { totalPrice: true },
+      }),
+
+      prisma.product.groupBy({ by: ['provider'], where: currentCreatedAtFilter }),
+      prisma.product.groupBy({ by: ['provider'], where: previousCreatedAtFilter }),
     ]);
+
+    const trends: DashboardTrends = {
+      products: buildTrend(productsCurrent, productsPrevious),
+      orders: buildTrend(ordersCurrent, ordersPrevious),
+      revenue: buildTrend(
+        Number(revenueCurrent._sum.totalPrice || 0),
+        Number(revenuePrevious._sum.totalPrice || 0)
+      ),
+      providers: buildTrend(providersCurrent.length, providersPrevious.length),
+    };
 
     const metrics: DashboardMetrics = {
       totalProducts,
       totalOrders,
       totalRevenue: Number(totalRevenue._sum.totalPrice || 0),
       totalProviders: totalProviders.length,
+      trends,
       latestSyncRun: latestSyncRun || null,
       dateRange: dateRange || null
     };
