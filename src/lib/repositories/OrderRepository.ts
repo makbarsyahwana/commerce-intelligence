@@ -1,9 +1,11 @@
-import { BaseRepository } from "./BaseRepository";
-import { OrderResponse } from "../sync/fetchProviders";
+import { BaseRepository, TransactionClient } from "./BaseRepository";
+import { OrderResponse, applyOrderVariations } from "../sync";
 import { ProviderConfig } from "../providers/config";
-import { applyOrderVariations } from "../sync/variationUtils";
 
 export class OrderRepository extends BaseRepository {
+  constructor(tx?: TransactionClient) {
+    super(tx);
+  }
 
   async upsertOrder(order: OrderResponse, provider: ProviderConfig, syncedAt: Date) {
     try {

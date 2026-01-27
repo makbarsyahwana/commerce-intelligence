@@ -1,10 +1,11 @@
-import { BaseRepository } from "./BaseRepository";
-import { ProductResponse } from "../sync/fetchProviders";
+import { BaseRepository, TransactionClient } from "./BaseRepository";
+import { ProductResponse, applyProductVariations } from "../sync";
 import { ProviderConfig } from "../providers/config";
-import { applyProductVariations } from "../sync/variationUtils";
-import { prisma } from "../container/prisma";
 
 export class ProductRepository extends BaseRepository {
+  constructor(tx?: TransactionClient) {
+    super(tx);
+  }
 
   async upsertProduct(product: ProductResponse, provider: ProviderConfig, syncedAt: Date) {
     try {
@@ -61,16 +62,14 @@ export class ProductRepository extends BaseRepository {
     }
   }
 
-  async upsertProductReviews(product: ProductResponse, provider: ProviderConfig, syncedAt: Date, tx?: typeof prisma) {
+  async upsertProductReviews(product: ProductResponse, provider: ProviderConfig, syncedAt: Date) {
     if (!product.reviews || product.reviews.length === 0) {
       return;
     }
 
-    const prismaClient = tx || this.prisma;
-
     try {
       // Delete existing reviews for this product
-      await prismaClient.productReview.deleteMany({
+      await this.prisma.productReview.deleteMany({
         where: {
           product: {
             provider: provider.name,
@@ -81,7 +80,7 @@ export class ProductRepository extends BaseRepository {
 
       // Create new reviews using the existing working pattern
       for (const review of product.reviews) {
-        await prismaClient.productReview.create({
+        await this.prisma.productReview.create({
           data: {
             product: {
               connect: {
