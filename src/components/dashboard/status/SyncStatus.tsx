@@ -1,4 +1,5 @@
 import { getLatestSyncRun } from '@/lib/services/dashboardQueries';
+import SyncNowButton from './SyncNowButton';
 
 interface SyncStatusProps {
   className?: string;
@@ -158,18 +159,8 @@ export default async function SyncStatus({ className = '' }: SyncStatusProps) {
 
           {/* Manual Sync Button */}
           <div className="pt-4 border-t border-gray-200">
-            <form
-              action="/api/admin/sync-now"
-              method="POST"
-              className="flex gap-3"
-            >
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={latestSyncRun.status === 'RUNNING'}
-              >
-                {latestSyncRun.status === 'RUNNING' ? 'Sync in Progress...' : 'Manual Sync'}
-              </button>
+            <div className="flex gap-3 items-start">
+              <SyncNowButton disabled={latestSyncRun.status === 'RUNNING'} />
               <a
                 href="/api/admin/sync-status"
                 target="_blank"
@@ -178,7 +169,7 @@ export default async function SyncStatus({ className = '' }: SyncStatusProps) {
               >
                 View API Status
               </a>
-            </form>
+            </div>
           </div>
         </div>
       )}
